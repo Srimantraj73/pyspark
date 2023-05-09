@@ -1,0 +1,27 @@
+#Create list of data to prepare data frame
+>>> person_list = [("Berry","","Allen",1,"M"),("Oliver","Queen","",2,"M"),("Robert","","Williams",3,"M"),("Tony","","Stark",4,"F"),("Rajiv","Mary","Kumar",5,"F")]
+
+from pyspark.sql.types import StructType,StringType,IntegerType,StructField;
+
+schema = StructType([StructField("firstname",StringType(),True),StructField("middlename",StringType(),True),StructField("lastname",StringType(),True),
+         StructField("id",IntegerType(),True),StructField("gender",StringType(),True)]);
+
+>>> df = spark.createDataFrame(data=person_list,schema=schema);
+>>> df.printSchema();
+root
+ |-- firstname: string (nullable = true)
+ |-- middlename: string (nullable = true)
+ |-- lastname: string (nullable = true)
+ |-- id: integer (nullable = true)
+ |-- gender: string (nullable = true)
+
+>>> df.show()
++---------+----------+--------+---+------+                                      
+|firstname|middlename|lastname| id|gender|
++---------+----------+--------+---+------+
+|    Berry|          |   Allen|  1|     M|
+|   Oliver|     Queen|        |  2|     M|
+|   Robert|          |Williams|  3|     M|
+|     Tony|          |   Stark|  4|     F|
+|    Rajiv|      Mary|   Kumar|  5|     F|
++---------+----------+--------+---+------+
