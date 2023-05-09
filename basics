@@ -460,6 +460,178 @@ Aggregate [EMPLOYEE_ID#16, max(SALARY#23) AS MAX_SALARY#1215]
 +- Relation [EMPLOYEE_ID#16,FIRST_NAME#17,LAST_NAME#18,EMAIL#19,PHONE_NUMBER#20,HIRE_DATE#21,JOB_ID#22,SALARY#23,COMMISSION_PCT#24,MANAGER_ID#25,DEPARTMENT_ID#26] csv
 
 >>> dfemp.select("EMPLOYEE_ID","SALARY").orderBy("SALARY").show();
+
+>>> dfemp.groupBy("DEPARTMENT_ID","JOB_ID").sum("SALARY").orderBy("DEPARTMENT_ID").show();
++-------------+----------+-----------+
+|DEPARTMENT_ID|    JOB_ID|sum(SALARY)|
++-------------+----------+-----------+
+|           10|   AD_ASST|       4400|
+|           20|    MK_REP|       6000|
+|           20|    MK_MAN|      13000|
+|           30|  PU_CLERK|      13900|
+|           30|    PU_MAN|      11000|
+|           40|    HR_REP|       6500|
+|           50|    ST_MAN|      36400|
+|           50|  ST_CLERK|      44000|
+|           50|  SH_CLERK|       5200|
+|           60|   IT_PROG|      28800|
+|           70|    PR_REP|      10000|
+|           90|   AD_PRES|      24000|
+|           90|     AD_VP|      34000|
+|          100|    FI_MGR|      12008|
+|          100|FI_ACCOUNT|      39600|
+|          110|    AC_MGR|      12008|
+|          110|AC_ACCOUNT|       8300|
++-------------+----------+-----------+
+
+>>> dfemp.filter((col("DEPARTMENT_ID") == 110)).select(col("DEPARTMENT_ID"),col("JOB_ID"),col("SALARY")).show();
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'col' is not defined
+>>> from pyspark.sql.functions import *
+>>> dfemp.filter((col("DEPARTMENT_ID") == 110)).select(col("DEPARTMENT_ID"),col("JOB_ID"),col("SALARY")).show();
++-------------+----------+------+
+|DEPARTMENT_ID|    JOB_ID|SALARY|
++-------------+----------+------+
+|          110|    AC_MGR| 12008|
+|          110|AC_ACCOUNT|  8300|
++-------------+----------+------+
+
+>>> dfemp.groupBy("DEPARTMENT_ID","JOB_ID").sum("SALARY","EMPLOYEE_ID").orderBy("DEPARTMENT_ID").show();
++-------------+----------+-----------+----------------+
+|DEPARTMENT_ID|    JOB_ID|sum(SALARY)|sum(EMPLOYEE_ID)|
++-------------+----------+-----------+----------------+
+|           10|   AD_ASST|       4400|             200|
+|           20|    MK_REP|       6000|             202|
+|           20|    MK_MAN|      13000|             201|
+|           30|  PU_CLERK|      13900|             585|
+|           30|    PU_MAN|      11000|             114|
+|           40|    HR_REP|       6500|             203|
+|           50|    ST_MAN|      36400|             610|
+|           50|  ST_CLERK|      44000|            2120|
+|           50|  SH_CLERK|       5200|             397|
+|           60|   IT_PROG|      28800|             525|
+|           70|    PR_REP|      10000|             204|
+|           90|   AD_PRES|      24000|             100|
+|           90|     AD_VP|      34000|             203|
+|          100|    FI_MGR|      12008|             108|
+|          100|FI_ACCOUNT|      39600|             555|
+|          110|    AC_MGR|      12008|             205|
+|          110|AC_ACCOUNT|       8300|             206|
++-------------+----------+-----------+----------------+
+
+>>> dfemp.filter((col("DEPARTMENT_ID") == 110)).select(col("DEPARTMENT_ID"),col("JOB_ID"),col("SALARY"),col("EMPLOYEE_ID")).show();
++-------------+----------+------+-----------+
+|DEPARTMENT_ID|    JOB_ID|SALARY|EMPLOYEE_ID|
++-------------+----------+------+-----------+
+|          110|    AC_MGR| 12008|        205|
+|          110|AC_ACCOUNT|  8300|        206|
++-------------+----------+------+-----------+
+
+>>> dfemp.groupBy("DEPARTMENT_ID","JOB_ID").agg(sum("SALARY").alias("sum salary"),max("SALARY").alias("max salary")).orderBy("DEPARTMENT_ID").show();
++-------------+----------+----------+----------+
+|DEPARTMENT_ID|    JOB_ID|sum salary|max salary|
++-------------+----------+----------+----------+
+|           10|   AD_ASST|      4400|      4400|
+|           20|    MK_REP|      6000|      6000|
+|           20|    MK_MAN|     13000|     13000|
+|           30|  PU_CLERK|     13900|      3100|
+|           30|    PU_MAN|     11000|     11000|
+|           40|    HR_REP|      6500|      6500|
+|           50|    ST_MAN|     36400|      8200|
+|           50|  ST_CLERK|     44000|      3600|
+|           50|  SH_CLERK|      5200|      2600|
+|           60|   IT_PROG|     28800|      9000|
+|           70|    PR_REP|     10000|     10000|
+|           90|   AD_PRES|     24000|     24000|
+|           90|     AD_VP|     34000|     17000|
+|          100|    FI_MGR|     12008|     12008|
+|          100|FI_ACCOUNT|     39600|      9000|
+|          110|    AC_MGR|     12008|     12008|
+|          110|AC_ACCOUNT|      8300|      8300|
++-------------+----------+----------+----------+
+
+>>> dfemp.groupBy("DEPARTMENT_ID").agg(sum("SALARY").alias("sum salary"),max("SALARY").alias("max salary")).orderBy("DEPARTMENT_ID").show();
++-------------+----------+----------+
+|DEPARTMENT_ID|sum salary|max salary|
++-------------+----------+----------+
+|           10|      4400|      4400|
+|           20|     19000|     13000|
+|           30|     24900|     11000|
+|           40|      6500|      6500|
+|           50|     85600|      8200|
+|           60|     28800|      9000|
+|           70|     10000|     10000|
+|           90|     58000|     24000|
+|          100|     51608|     12008|
+|          110|     20308|     12008|
++-------------+----------+----------+
+
+dfemp.groupBy("DEPARTMENT_ID").agg(sum("SALARY").alias("sum salary"),max("SALARY").alias("max salary")).where(col("max salary")>10000).orderBy("DEPARTMENT_ID").show();
++-------------+----------+----------+
+|DEPARTMENT_ID|sum salary|max salary|
++-------------+----------+----------+
+|           20|     19000|     13000|
+|           30|     24900|     11000|
+|           90|     58000|     24000|
+|          100|     51608|     12008|
+|          110|     20308|     12008|
++-------------+----------+----------+
+
+>>> df = dfemp.withColumn("Emp Grade",when(col("SALARY")>15000,"A").when((col("SALARY")>10000) & (col("SALARY")<15000),"B").otherwise("C"))
+>>> df.show()
++-----------+----------+---------+--------+------------+---------+----------+------+--------------+----------+-------------+---------+
+|EMPLOYEE_ID|FIRST_NAME|LAST_NAME|   EMAIL|PHONE_NUMBER|HIRE_DATE|    JOB_ID|SALARY|COMMISSION_PCT|MANAGER_ID|DEPARTMENT_ID|Emp Grade|
++-----------+----------+---------+--------+------------+---------+----------+------+--------------+----------+-------------+---------+
+|        198|    Donald| OConnell|DOCONNEL|650.507.9833|21-JUN-07|  SH_CLERK|  2600|            - |       124|           50|        C|
+|        199|   Douglas|    Grant|  DGRANT|650.507.9844|13-JAN-08|  SH_CLERK|  2600|            - |       124|           50|        C|
+|        200|  Jennifer|   Whalen| JWHALEN|515.123.4444|17-SEP-03|   AD_ASST|  4400|            - |       101|           10|        C|
+|        201|   Michael|Hartstein|MHARTSTE|515.123.5555|17-FEB-04|    MK_MAN| 13000|            - |       100|           20|        B|
+|        202|       Pat|      Fay|    PFAY|603.123.6666|17-AUG-05|    MK_REP|  6000|            - |       201|           20|        C|
+|        203|     Susan|   Mavris| SMAVRIS|515.123.7777|07-JUN-02|    HR_REP|  6500|            - |       101|           40|        C|
+|        204|   Hermann|     Baer|   HBAER|515.123.8888|07-JUN-02|    PR_REP| 10000|            - |       101|           70|        C|
+|        205|   Shelley|  Higgins|SHIGGINS|515.123.8080|07-JUN-02|    AC_MGR| 12008|            - |       101|          110|        B|
+|        206|   William|    Gietz|  WGIETZ|515.123.8181|07-JUN-02|AC_ACCOUNT|  8300|            - |       205|          110|        C|
+|        100|    Steven|     King|   SKING|515.123.4567|17-JUN-03|   AD_PRES| 24000|            - |        - |           90|        A|
+|        101|     Neena|  Kochhar|NKOCHHAR|515.123.4568|21-SEP-05|     AD_VP| 17000|            - |       100|           90|        A|
+|        102|       Lex|  De Haan| LDEHAAN|515.123.4569|13-JAN-01|     AD_VP| 17000|            - |       100|           90|        A|
+|        103| Alexander|   Hunold| AHUNOLD|590.423.4567|03-JAN-06|   IT_PROG|  9000|            - |       102|           60|        C|
+|        104|     Bruce|    Ernst|  BERNST|590.423.4568|21-MAY-07|   IT_PROG|  6000|            - |       103|           60|        C|
+|        105|     David|   Austin| DAUSTIN|590.423.4569|25-JUN-05|   IT_PROG|  4800|            - |       103|           60|        C|
+|        106|     Valli|Pataballa|VPATABAL|590.423.4560|05-FEB-06|   IT_PROG|  4800|            - |       103|           60|        C|
+|        107|     Diana|  Lorentz|DLORENTZ|590.423.5567|07-FEB-07|   IT_PROG|  4200|            - |       103|           60|        C|
+|        108|     Nancy|Greenberg|NGREENBE|515.124.4569|17-AUG-02|    FI_MGR| 12008|            - |       101|          100|        B|
+|        109|    Daniel|   Faviet| DFAVIET|515.124.4169|16-AUG-02|FI_ACCOUNT|  9000|            - |       108|          100|        C|
+|        110|      John|     Chen|   JCHEN|515.124.4269|28-SEP-05|FI_ACCOUNT|  8200|            - |       108|          100|        C|
++-----------+----------+---------+--------+------------+---------+----------+------+--------------+----------+-------------+---------+
+
+>>> df.select(col("EMPLOYEE_ID"),col("SALARY"),col("Emp Grade")).show()
++-----------+------+---------+
+|EMPLOYEE_ID|SALARY|Emp Grade|
++-----------+------+---------+
+|        198|  2600|        C|
+|        199|  2600|        C|
+|        200|  4400|        C|
+|        201| 13000|        B|
+|        202|  6000|        C|
+|        203|  6500|        C|
+|        204| 10000|        C|
+|        205| 12008|        B|
+|        206|  8300|        C|
+|        100| 24000|        A|
+|        101| 17000|        A|
+|        102| 17000|        A|
+|        103|  9000|        C|
+|        104|  6000|        C|
+|        105|  4800|        C|
+|        106|  4800|        C|
+|        107|  4200|        C|
+|        108| 12008|        B|
+|        109|  9000|        C|
+|        110|  8200|        C|
++-----------+------+---------+
+
+
 +-----------+------+
 |EMPLOYEE_ID|SALARY|
 +-----------+------+
