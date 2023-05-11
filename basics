@@ -685,6 +685,257 @@ only showing top 20 rows
 +-----------+-------------+------+
 
 
+>>> df = spark.read.text('/input-data/about_us.txt')
+>>> df.show()
++--------------------+
+|               value|
++--------------------+
+|This Tutorial is ...|
+|                    |
+|      Spark Overview|
+|Apache Spark is a...|
+|                    |
+|         Downloading|
+|Get Spark from th...|
+|                    |
+|If you’d like to ...|
+|                    |
+|Spark runs on bot...|
+|                    |
+|Spark runs on Jav...|
+|                    |
+|For Python 3.9, A...|
++--------------------+
+
+>>> df1 = df.withColumn('word',explode(split(col('value'),' ')));
+>>> df1.show()
++--------------------+----------+
+|               value|      word|
++--------------------+----------+
+|This Tutorial is ...|      This|
+|This Tutorial is ...|  Tutorial|
+|This Tutorial is ...|        is|
+|This Tutorial is ...| exclusive|
+|This Tutorial is ...|       for|
+|This Tutorial is ...|       the|
+|This Tutorial is ...|    people|
+|This Tutorial is ...|       who|
+|This Tutorial is ...|       are|
+|This Tutorial is ...|interested|
+|This Tutorial is ...|        in|
+|This Tutorial is ...|    making|
+|This Tutorial is ...|     their|
+|This Tutorial is ...|      foot|
+|This Tutorial is ...|    prints|
+|This Tutorial is ...|        in|
+|This Tutorial is ...|       one|
+|This Tutorial is ...|        of|
+|This Tutorial is ...|       the|
+|This Tutorial is ...|       top|
++--------------------+----------+
+only showing top 20 rows
+
+>>> df2=df1.groupBy('word').agg(count('word'))
+>>> df2.show()
++-----------------+-----------+
+|             word|count(word)|
++-----------------+-----------+
+|    installation.|          1|
+|           niche,|          1|
+|          include|          2|
+|      Processing,|          1|
+|    Compatibility|          1|
+|       2.12/2.13,|          1|
+|              API|          1|
+|               If|          1|
+|                —|          1|
+|         8/11/17,|          1|
+|    documentation|          1|
+|            (e.g.|          1|
+|    MS-PowerApps,|          1|
+|             It’s|          1|
+|        exclusive|          1|
+|             Data|          2|
+|code/applications|          1|
+|          graphs.|          1|
+|             3.7+|          1|
+|             rich|          1|
++-----------------+-----------+
+only showing top 20 rows
+
+>>> rdd=spark.sparkContext.textFile('/input-data/about_us.txt');
+>>> rdd
+/input-data/about_us.txt MapPartitionsRDD[54] at textFile at NativeMethodAccessorImpl.java:0
+>>> rdd.collect();
+['This Tutorial is exclusive for the people who are interested in making their foot prints in one of the top niche, trending technology in IT world. The content posted here are suitable for all learning professionals, Students, Teacher,  Freshers etc. Here, we talk about BigData analytics, Azure Data Engineering, Spark Scala, Spark with Python (PySpark), Azure Functions, Machine Learning concepts and techniques, Natural Language Processing, MS-PowerApps, and Data Visualization tools.', '', 'Spark Overview', 'Apache Spark is a unified analytics engine for large-scale data processing. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs. It also supports a rich set of higher-level tools including Spark SQL for SQL and structured data processing, pandas API on Spark for pandas workloads, MLlib for machine learning, GraphX for graph processing, and Structured Streaming for incremental computation and stream processing.', '', 'Downloading', 'Get Spark from the downloads page of the project website. This documentation is for Spark version 3.3.1. Spark uses Hadoop’s client libraries for HDFS and YARN. Downloads are pre-packaged for a handful of popular Hadoop versions. Users can also download a “Hadoop free” binary and run Spark with any Hadoop version by augmenting Spark’s classpath. Scala and Java users can include Spark in their projects using its Maven coordinates and Python users can install Spark from PyPI.', '', 'If you’d like to build Spark from source, visit Building Spark.', '', 'Spark runs on both Windows and UNIX-like systems (e.g. Linux, Mac OS), and it should run on any platform that runs a supported version of Java. This should include JVMs on x86_64 and ARM64. It’s easy to run locally on one machine — all you need is to have java installed on your system PATH, or the JAVA_HOME environment variable pointing to a Java installation.', '', 'Spark runs on Java 8/11/17, Scala 2.12/2.13, Python 3.7+ and R 3.5+. Java 8 prior to version 8u201 support is deprecated as of Spark 3.2.0. When using the Scala API, it is necessary for applications to use the same version of Scala that Spark was compiled for. For example, when using Scala 2.13, use Spark compiled for 2.13, and compile code/applications for Scala 2.13 as well.', '', 'For Python 3.9, Arrow optimization and pandas UDFs might not work due to the supported Python versions in Apache Arrow. Please refer to the latest Python Compatibility page. For Java 11, -Dio.netty.tryReflectionSetAccessible=true is required additionally for Apache Arrow library. This prevents java.lang.UnsupportedOperationException: sun.misc.Unsafe or java.nio.DirectByteBuffer.(long, int) not available when Apache Arrow uses Netty internally.']
+
+>>> rdd1=rdd.flatMap(lambda line:line.split(' '))
+>>> rdd1
+PythonRDD[55] at RDD at PythonRDD.scala:53
+>>> rdd1.collect();
+['This', 'Tutorial', 'is', 'exclusive', 'for', 'the', 'people', 'who', 'are', 'interested', 'in', 'making', 'their', 'foot', 'prints', 'in', 'one', 'of', 'the', 'top', 'niche,', 'trending', 'technology', 'in', 'IT', 'world.', 'The', 'content', 'posted', 'here', 'are', 'suitable', 'for', 'all', 'learning', 'professionals,', 'Students,', 'Teacher,', '', 'Freshers', 'etc.', 'Here,', 'we', 'talk', 'about', 'BigData', 'analytics,', 'Azure', 'Data', 'Engineering,', 'Spark', 'Scala,', 'Spark', 'with', 'Python', '(PySpark),', 'Azure', 'Functions,', 'Machine', 'Learning', 'concepts', 'and', 'techniques,', 'Natural', 'Language', 'Processing,', 'MS-PowerApps,', 'and', 'Data', 'Visualization', 'tools.', '', 'Spark', 'Overview', 'Apache', 'Spark', 'is', 'a', 'unified', 'analytics', 'engine', 'for', 'large-scale', 'data', 'processing.', 'It', 'provides', 'high-level', 'APIs', 'in', 'Java,', 'Scala,', 'Python', 'and', 'R,', 'and', 'an', 'optimized', 'engine', 'that', 'supports', 'general', 'execution', 'graphs.', 'It', 'also', 'supports', 'a', 'rich', 'set', 'of', 'higher-level', 'tools', 'including', 'Spark', 'SQL', 'for', 'SQL', 'and', 'structured', 'data', 'processing,', 'pandas', 'API', 'on', 'Spark', 'for', 'pandas', 'workloads,', 'MLlib', 'for', 'machine', 'learning,', 'GraphX', 'for', 'graph', 'processing,', 'and', 'Structured', 'Streaming', 'for', 'incremental', 'computation', 'and', 'stream', 'processing.', '', 'Downloading', 'Get', 'Spark', 'from', 'the', 'downloads', 'page', 'of', 'the', 'project', 'website.', 'This', 'documentation', 'is', 'for', 'Spark', 'version', '3.3.1.', 'Spark', 'uses', 'Hadoop’s', 'client', 'libraries', 'for', 'HDFS', 'and', 'YARN.', 'Downloads', 'are', 'pre-packaged', 'for', 'a', 'handful', 'of', 'popular', 'Hadoop', 'versions.', 'Users', 'can', 'also', 'download', 'a', '“Hadoop', 'free”', 'binary', 'and', 'run', 'Spark', 'with', 'any', 'Hadoop', 'version', 'by', 'augmenting', 'Spark’s', 'classpath.', 'Scala', 'and', 'Java', 'users', 'can', 'include', 'Spark', 'in', 'their', 'projects', 'using', 'its', 'Maven', 'coordinates', 'and', 'Python', 'users', 'can', 'install', 'Spark', 'from', 'PyPI.', '', 'If', 'you’d', 'like', 'to', 'build', 'Spark', 'from', 'source,', 'visit', 'Building', 'Spark.', '', 'Spark', 'runs', 'on', 'both', 'Windows', 'and', 'UNIX-like', 'systems', '(e.g.', 'Linux,', 'Mac', 'OS),', 'and', 'it', 'should', 'run', 'on', 'any', 'platform', 'that', 'runs', 'a', 'supported', 'version', 'of', 'Java.', 'This', 'should', 'include', 'JVMs', 'on', 'x86_64', 'and', 'ARM64.', 'It’s', 'easy', 'to', 'run', 'locally', 'on', 'one', 'machine', '—', 'all', 'you', 'need', 'is', 'to', 'have', 'java', 'installed', 'on', 'your', 'system', 'PATH,', 'or', 'the', 'JAVA_HOME', 'environment', 'variable', 'pointing', 'to', 'a', 'Java', 'installation.', '', 'Spark', 'runs', 'on', 'Java', '8/11/17,', 'Scala', '2.12/2.13,', 'Python', '3.7+', 'and', 'R', '3.5+.', 'Java', '8', 'prior', 'to', 'version', '8u201', 'support', 'is', 'deprecated', 'as', 'of', 'Spark', '3.2.0.', 'When', 'using', 'the', 'Scala', 'API,', 'it', 'is', 'necessary', 'for', 'applications', 'to', 'use', 'the', 'same', 'version', 'of', 'Scala', 'that', 'Spark', 'was', 'compiled', 'for.', 'For', 'example,', 'when', 'using', 'Scala', '2.13,', 'use', 'Spark', 'compiled', 'for', '2.13,', 'and', 'compile', 'code/applications', 'for', 'Scala', '2.13', 'as', 'well.', '', 'For', 'Python', '3.9,', 'Arrow', 'optimization', 'and', 'pandas', 'UDFs', 'might', 'not', 'work', 'due', 'to', 'the', 'supported', 'Python', 'versions', 'in', 'Apache', 'Arrow.', 'Please', 'refer', 'to', 'the', 'latest', 'Python', 'Compatibility', 'page.', 'For', 'Java', '11,', '-Dio.netty.tryReflectionSetAccessible=true', 'is', 'required', 'additionally', 'for', 'Apache', 'Arrow', 'library.', 'This', 'prevents', 'java.lang.UnsupportedOperationException:', 'sun.misc.Unsafe', 'or', 'java.nio.DirectByteBuffer.(long,', 'int)', 'not', 'available', 'when', 'Apache', 'Arrow', 'uses', 'Netty', 'internally.']
+
+
+>>> rdd2=rdd.map(lambda line:(line,1))
+>>> rdd2.collect();
+[('This Tutorial is exclusive for the people who are interested in making their foot prints in one of the top niche, trending technology in IT world. The content posted here are suitable for all learning professionals, Students, Teacher,  Freshers etc. Here, we talk about BigData analytics, Azure Data Engineering, Spark Scala, Spark with Python (PySpark), Azure Functions, Machine Learning concepts and techniques, Natural Language Processing, MS-PowerApps, and Data Visualization tools.', 1), ('', 1), ('Spark Overview', 1), ('Apache Spark is a unified analytics engine for large-scale data processing. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs. It also supports a rich set of higher-level tools including Spark SQL for SQL and structured data processing, pandas API on Spark for pandas workloads, MLlib for machine learning, GraphX for graph processing, and Structured Streaming for incremental computation and stream processing.', 1), ('', 1), ('Downloading', 1), ('Get Spark from the downloads page of the project website. This documentation is for Spark version 3.3.1. Spark uses Hadoop’s client libraries for HDFS and YARN. Downloads are pre-packaged for a handful of popular Hadoop versions. Users can also download a “Hadoop free” binary and run Spark with any Hadoop version by augmenting Spark’s classpath. Scala and Java users can include Spark in their projects using its Maven coordinates and Python users can install Spark from PyPI.', 1), ('', 1), ('If you’d like to build Spark from source, visit Building Spark.', 1), ('', 1), ('Spark runs on both Windows and UNIX-like systems (e.g. Linux, Mac OS), and it should run on any platform that runs a supported version of Java. This should include JVMs on x86_64 and ARM64. It’s easy to run locally on one machine — all you need is to have java installed on your system PATH, or the JAVA_HOME environment variable pointing to a Java installation.', 1), ('', 1), ('Spark runs on Java 8/11/17, Scala 2.12/2.13, Python 3.7+ and R 3.5+. Java 8 prior to version 8u201 support is deprecated as of Spark 3.2.0. When using the Scala API, it is necessary for applications to use the same version of Scala that Spark was compiled for. For example, when using Scala 2.13, use Spark compiled for 2.13, and compile code/applications for Scala 2.13 as well.', 1), ('', 1), ('For Python 3.9, Arrow optimization and pandas UDFs might not work due to the supported Python versions in Apache Arrow. Please refer to the latest Python Compatibility page. For Java 11, -Dio.netty.tryReflectionSetAccessible=true is required additionally for Apache Arrow library. This prevents java.lang.UnsupportedOperationException: sun.misc.Unsafe or java.nio.DirectByteBuffer.(long, int) not available when Apache Arrow uses Netty internally.', 1)]
+
+
+>>> rdd2=rdd1.map(lambda line:(line,1))
+>>> rdd2.collect();
+[('This', 1), ('Tutorial', 1), ('is', 1), ('exclusive', 1), ('for', 1), ('the', 1), ('people', 1), ('who', 1), ('are', 1), ('interested', 1), ('in', 1), ('making', 1), ('their', 1), ('foot', 1), ('prints', 1), ('in', 1), ('one', 1), ('of', 1), ('the', 1), ('top', 1), ('niche,', 1), ('trending', 1), ('technology', 1), ('in', 1), ('IT', 1), ('world.', 1), ('The', 1), ('content', 1), ('posted', 1), ('here', 1), ('are', 1), ('suitable', 1), ('for', 1), ('all', 1), ('learning', 1), ('professionals,', 1), ('Students,', 1), ('Teacher,', 1), ('', 1), ('Freshers', 1), ('etc.', 1), ('Here,', 1), ('we', 1), ('talk', 1), ('about', 1), ('BigData', 1), ('analytics,', 1), ('Azure', 1), ('Data', 1), ('Engineering,', 1), ('Spark', 1), ('Scala,', 1), ('Spark', 1), ('with', 1), ('Python', 1), ('(PySpark),', 1), ('Azure', 1), ('Functions,', 1), ('Machine', 1), ('Learning', 1), ('concepts', 1), ('and', 1), ('techniques,', 1), ('Natural', 1), ('Language', 1), ('Processing,', 1), ('MS-PowerApps,', 1), ('and', 1), ('Data', 1), ('Visualization', 1), ('tools.', 1), ('', 1), ('Spark', 1), ('Overview', 1), ('Apache', 1), ('Spark', 1), ('is', 1), ('a', 1), ('unified', 1), ('analytics', 1), ('engine', 1), ('for', 1), ('large-scale', 1), ('data', 1), ('processing.', 1), ('It', 1), ('provides', 1), ('high-level', 1), ('APIs', 1), ('in', 1), ('Java,', 1), ('Scala,', 1), ('Python', 1), ('and', 1), ('R,', 1), ('and', 1), ('an', 1), ('optimized', 1), ('engine', 1), ('that', 1), ('supports', 1), ('general', 1), ('execution', 1), ('graphs.', 1), ('It', 1), ('also', 1), ('supports', 1), ('a', 1), ('rich', 1), ('set', 1), ('of', 1), ('higher-level', 1), ('tools', 1), ('including', 1), ('Spark', 1), ('SQL', 1), ('for', 1), ('SQL', 1), ('and', 1), ('structured', 1), ('data', 1), ('processing,', 1), ('pandas', 1), ('API', 1), ('on', 1), ('Spark', 1), ('for', 1), ('pandas', 1), ('workloads,', 1), ('MLlib', 1), ('for', 1), ('machine', 1), ('learning,', 1), ('GraphX', 1), ('for', 1), ('graph', 1), ('processing,', 1), ('and', 1), ('Structured', 1), ('Streaming', 1), ('for', 1), ('incremental', 1), ('computation', 1), ('and', 1), ('stream', 1), ('processing.', 1), ('', 1), ('Downloading', 1), ('Get', 1), ('Spark', 1), ('from', 1), ('the', 1), ('downloads', 1), ('page', 1), ('of', 1), ('the', 1), ('project', 1), ('website.', 1), ('This', 1), ('documentation', 1), ('is', 1), ('for', 1), ('Spark', 1), ('version', 1), ('3.3.1.', 1), ('Spark', 1), ('uses', 1), ('Hadoop’s', 1), ('client', 1), ('libraries', 1), ('for', 1), ('HDFS', 1), ('and', 1), ('YARN.', 1), ('Downloads', 1), ('are', 1), ('pre-packaged', 1), ('for', 1), ('a', 1), ('handful', 1), ('of', 1), ('popular', 1), ('Hadoop', 1), ('versions.', 1), ('Users', 1), ('can', 1), ('also', 1), ('download', 1), ('a', 1), ('“Hadoop', 1), ('free”', 1), ('binary', 1), ('and', 1), ('run', 1), ('Spark', 1), ('with', 1), ('any', 1), ('Hadoop', 1), ('version', 1), ('by', 1), ('augmenting', 1), ('Spark’s', 1), ('classpath.', 1), ('Scala', 1), ('and', 1), ('Java', 1), ('users', 1), ('can', 1), ('include', 1), ('Spark', 1), ('in', 1), ('their', 1), ('projects', 1), ('using', 1), ('its', 1), ('Maven', 1), ('coordinates', 1), ('and', 1), ('Python', 1), ('users', 1), ('can', 1), ('install', 1), ('Spark', 1), ('from', 1), ('PyPI.', 1), ('', 1), ('If', 1), ('you’d', 1), ('like', 1), ('to', 1), ('build', 1), ('Spark', 1), ('from', 1), ('source,', 1), ('visit', 1), ('Building', 1), ('Spark.', 1), ('', 1), ('Spark', 1), ('runs', 1), ('on', 1), ('both', 1), ('Windows', 1), ('and', 1), ('UNIX-like', 1), ('systems', 1), ('(e.g.', 1), ('Linux,', 1), ('Mac', 1), ('OS),', 1), ('and', 1), ('it', 1), ('should', 1), ('run', 1), ('on', 1), ('any', 1), ('platform', 1), ('that', 1), ('runs', 1), ('a', 1), ('supported', 1), ('version', 1), ('of', 1), ('Java.', 1), ('This', 1), ('should', 1), ('include', 1), ('JVMs', 1), ('on', 1), ('x86_64', 1), ('and', 1), ('ARM64.', 1), ('It’s', 1), ('easy', 1), ('to', 1), ('run', 1), ('locally', 1), ('on', 1), ('one', 1), ('machine', 1), ('—', 1), ('all', 1), ('you', 1), ('need', 1), ('is', 1), ('to', 1), ('have', 1), ('java', 1), ('installed', 1), ('on', 1), ('your', 1), ('system', 1), ('PATH,', 1), ('or', 1), ('the', 1), ('JAVA_HOME', 1), ('environment', 1), ('variable', 1), ('pointing', 1), ('to', 1), ('a', 1), ('Java', 1), ('installation.', 1), ('', 1), ('Spark', 1), ('runs', 1), ('on', 1), ('Java', 1), ('8/11/17,', 1), ('Scala', 1), ('2.12/2.13,', 1), ('Python', 1), ('3.7+', 1), ('and', 1), ('R', 1), ('3.5+.', 1), ('Java', 1), ('8', 1), ('prior', 1), ('to', 1), ('version', 1), ('8u201', 1), ('support', 1), ('is', 1), ('deprecated', 1), ('as', 1), ('of', 1), ('Spark', 1), ('3.2.0.', 1), ('When', 1), ('using', 1), ('the', 1), ('Scala', 1), ('API,', 1), ('it', 1), ('is', 1), ('necessary', 1), ('for', 1), ('applications', 1), ('to', 1), ('use', 1), ('the', 1), ('same', 1), ('version', 1), ('of', 1), ('Scala', 1), ('that', 1), ('Spark', 1), ('was', 1), ('compiled', 1), ('for.', 1), ('For', 1), ('example,', 1), ('when', 1), ('using', 1), ('Scala', 1), ('2.13,', 1), ('use', 1), ('Spark', 1), ('compiled', 1), ('for', 1), ('2.13,', 1), ('and', 1), ('compile', 1), ('code/applications', 1), ('for', 1), ('Scala', 1), ('2.13', 1), ('as', 1), ('well.', 1), ('', 1), ('For', 1), ('Python', 1), ('3.9,', 1), ('Arrow', 1), ('optimization', 1), ('and', 1), ('pandas', 1), ('UDFs', 1), ('might', 1), ('not', 1), ('work', 1), ('due', 1), ('to', 1), ('the', 1), ('supported', 1), ('Python', 1), ('versions', 1), ('in', 1), ('Apache', 1), ('Arrow.', 1), ('Please', 1), ('refer', 1), ('to', 1), ('the', 1), ('latest', 1), ('Python', 1), ('Compatibility', 1), ('page.', 1), ('For', 1), ('Java', 1), ('11,', 1), ('-Dio.netty.tryReflectionSetAccessible=true', 1), ('is', 1), ('required', 1), ('additionally', 1), ('for', 1), ('Apache', 1), ('Arrow', 1), ('library.', 1), ('This', 1), ('prevents', 1), ('java.lang.UnsupportedOperationException:', 1), ('sun.misc.Unsafe', 1), ('or', 1), ('java.nio.DirectByteBuffer.(long,', 1), ('int)', 1), ('not', 1), ('available', 1), ('when', 1), ('Apache', 1), ('Arrow', 1), ('uses', 1), ('Netty', 1), ('internally.', 1)]
+
+
+>>> rdd1=rdd.filter(lambda a:'in' in a)
+>>> rdd1.collect()
+['This Tutorial is exclusive for the people who are interested in making their foot prints in one of the top niche, trending technology in IT world. The content posted here are suitable for all learning professionals, Students, Teacher,  Freshers etc. Here, we talk about BigData analytics, Azure Data Engineering, Spark Scala, Spark with Python (PySpark), Azure Functions, Machine Learning concepts and techniques, Natural Language Processing, MS-PowerApps, and Data Visualization tools.', 'Apache Spark is a unified analytics engine for large-scale data processing. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs. It also supports a rich set of higher-level tools including Spark SQL for SQL and structured data processing, pandas API on Spark for pandas workloads, MLlib for machine learning, GraphX for graph processing, and Structured Streaming for incremental computation and stream processing.', 'Downloading', 'Get Spark from the downloads page of the project website. This documentation is for Spark version 3.3.1. Spark uses Hadoop’s client libraries for HDFS and YARN. Downloads are pre-packaged for a handful of popular Hadoop versions. Users can also download a “Hadoop free” binary and run Spark with any Hadoop version by augmenting Spark’s classpath. Scala and Java users can include Spark in their projects using its Maven coordinates and Python users can install Spark from PyPI.', 'If you’d like to build Spark from source, visit Building Spark.', 'Spark runs on both Windows and UNIX-like systems (e.g. Linux, Mac OS), and it should run on any platform that runs a supported version of Java. This should include JVMs on x86_64 and ARM64. It’s easy to run locally on one machine — all you need is to have java installed on your system PATH, or the JAVA_HOME environment variable pointing to a Java installation.', 'Spark runs on Java 8/11/17, Scala 2.12/2.13, Python 3.7+ and R 3.5+. Java 8 prior to version 8u201 support is deprecated as of Spark 3.2.0. When using the Scala API, it is necessary for applications to use the same version of Scala that Spark was compiled for. For example, when using Scala 2.13, use Spark compiled for 2.13, and compile code/applications for Scala 2.13 as well.', 'For Python 3.9, Arrow optimization and pandas UDFs might not work due to the supported Python versions in Apache Arrow. Please refer to the latest Python Compatibility page. For Java 11, -Dio.netty.tryReflectionSetAccessible=true is required additionally for Apache Arrow library. This prevents java.lang.UnsupportedOperationException: sun.misc.Unsafe or java.nio.DirectByteBuffer.(long, int) not available when Apache Arrow uses Netty internally.']
+
+>>> rdd1.count()
+8
+
+>>> rdd=spark.sparkContext.textFile('/input-data/about_us.txt');
+>>> rdd1 = rdd.flatMap(lambda x:x.split(' '))
+>>> rdd2 = rdd1.map(lambda x:(x,1))
+>>> rdd3 = rdd2.reduceByKey(lambda x,y:x+y)
+>>> rdd3.collect();
+[('Tutorial', 1), ('is', 7), ('exclusive', 1), ('are', 3), ('interested', 1), ('in', 6), ('making', 1), ('of', 7), ('niche,', 1), ('trending', 1), ('technology', 1), ('The', 1), ('suitable', 1), ('learning', 1), ('professionals,', 1), ('Students,', 1), ('Teacher,', 1), ('', 7), ('Freshers', 1), ('etc.', 1), ('we', 1), ('analytics,', 1), ('Azure', 2), ('Engineering,', 1), ('Spark', 18), ('Scala,', 2), ('Python', 7), ('Machine', 1), ('concepts', 1), ('techniques,', 1), ('MS-PowerApps,', 1), ('Overview', 1), ('Apache', 4), ('unified', 1), ('analytics', 1), ('engine', 2), ('It', 2), ('provides', 1), ('high-level', 1), ('APIs', 1), ('Java,', 1), ('an', 1), ('optimized', 1), ('supports', 2), ('execution', 1), ('set', 1), ('tools', 1), ('SQL', 2), ('processing,', 2), ('pandas', 3), ('MLlib', 1), ('machine', 2), ('learning,', 1), ('GraphX', 1), ('graph', 1), ('Structured', 1), ('incremental', 1), ('computation', 1), ('Downloading', 1), ('Get', 1), ('page', 1), ('project', 1), ('documentation', 1), ('version', 5), ('uses', 2), ('Hadoop’s', 1), ('HDFS', 1), ('YARN.', 1), ('pre-packaged', 1), ('handful', 1), ('Users', 1), ('free”', 1), ('binary', 1), ('run', 3), ('augmenting', 1), ('Java', 5), ('include', 2), ('projects', 1), ('using', 3), ('Maven', 1), ('coordinates', 1), ('install', 1), ('like', 1), ('visit', 1), ('Building', 1), ('Spark.', 1), ('both', 1), ('Windows', 1), ('UNIX-like', 1), ('systems', 1), ('(e.g.', 1), ('OS),', 1), ('platform', 1), ('Java.', 1), ('x86_64', 1), ('ARM64.', 1), ('It’s', 1), ('locally', 1), ('have', 1), ('java', 1), ('installed', 1), ('PATH,', 1), ('JAVA_HOME', 1), ('variable', 1), ('pointing', 1), ('installation.', 1), ('8/11/17,', 1), ('2.12/2.13,', 1), ('3.7+', 1), ('R', 1), ('8', 1), ('8u201', 1), ('support', 1), ('as', 2), ('When', 1), ('use', 2), ('was', 1), ('compiled', 2), ('for.', 1), ('example,', 1), ('when', 2), ('2.13,', 2), ('compile', 1), ('2.13', 1), ('optimization', 1), ('UDFs', 1), ('work', 1), ('due', 1), ('versions', 1), ('Please', 1), ('refer', 1), ('latest', 1), ('Compatibility', 1), ('page.', 1), ('11,', 1), ('-Dio.netty.tryReflectionSetAccessible=true', 1), ('library.', 1), ('prevents', 1), ('java.nio.DirectByteBuffer.(long,', 1), ('This', 4), ('for', 15), ('the', 9), ('people', 1), ('who', 1), ('their', 2), ('foot', 1), ('prints', 1), ('one', 2), ('top', 1), ('IT', 1), ('world.', 1), ('content', 1), ('posted', 1), ('here', 1), ('all', 2), ('Here,', 1), ('talk', 1), ('about', 1), ('BigData', 1), ('Data', 2), ('with', 2), ('(PySpark),', 1), ('Functions,', 1), ('Learning', 1), ('and', 17), ('Natural', 1), ('Language', 1), ('Processing,', 1), ('Visualization', 1), ('tools.', 1), ('a', 6), ('large-scale', 1), ('data', 2), ('processing.', 2), ('R,', 1), ('that', 3), ('general', 1), ('graphs.', 1), ('also', 2), ('rich', 1), ('higher-level', 1), ('including', 1), ('structured', 1), ('API', 1), ('on', 7), ('workloads,', 1), ('Streaming', 1), ('stream', 1), ('from', 3), ('downloads', 1), ('website.', 1), ('3.3.1.', 1), ('client', 1), ('libraries', 1), ('Downloads', 1), ('popular', 1), ('Hadoop', 2), ('versions.', 1), ('can', 3), ('download', 1), ('“Hadoop', 1), ('any', 2), ('by', 1), ('Spark’s', 1), ('classpath.', 1), ('Scala', 6), ('users', 2), ('its', 1), ('PyPI.', 1), ('If', 1), ('you’d', 1), ('to', 8), ('build', 1), ('source,', 1), ('runs', 3), ('Linux,', 1), ('Mac', 1), ('it', 2), ('should', 2), ('supported', 2), ('JVMs', 1), ('easy', 1), ('—', 1), ('you', 1), ('need', 1), ('your', 1), ('system', 1), ('or', 2), ('environment', 1), ('3.5+.', 1), ('prior', 1), ('deprecated', 1), ('3.2.0.', 1), ('API,', 1), ('necessary', 1), ('applications', 1), ('same', 1), ('For', 3), ('code/applications', 1), ('well.', 1), ('3.9,', 1), ('Arrow', 3), ('might', 1), ('not', 2), ('Arrow.', 1), ('required', 1), ('additionally', 1), ('java.lang.UnsupportedOperationException:', 1), ('sun.misc.Unsafe', 1), ('int)', 1), ('available', 1), ('Netty', 1), ('internally.', 1)]
+
+>>> rdd=spark.sparkContext.textFile('/input-data/about_us.txt');
+>>> rdd1=rdd.filter(lambda x:'in' in x)
+>>> rdd1.collect();
+['This Tutorial is exclusive for the people who are interested in making their foot prints in one of the top niche, trending technology in IT world. The content posted here are suitable for all learning professionals, Students, Teacher,  Freshers etc. Here, we talk about BigData analytics, Azure Data Engineering, Spark Scala, Spark with Python (PySpark), Azure Functions, Machine Learning concepts and techniques, Natural Language Processing, MS-PowerApps, and Data Visualization tools.', 'Apache Spark is a unified analytics engine for large-scale data processing. It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs. It also supports a rich set of higher-level tools including Spark SQL for SQL and structured data processing, pandas API on Spark for pandas workloads, MLlib for machine learning, GraphX for graph processing, and Structured Streaming for incremental computation and stream processing.', 'Downloading', 'Get Spark from the downloads page of the project website. This documentation is for Spark version 3.3.1. Spark uses Hadoop’s client libraries for HDFS and YARN. Downloads are pre-packaged for a handful of popular Hadoop versions. Users can also download a “Hadoop free” binary and run Spark with any Hadoop version by augmenting Spark’s classpath. Scala and Java users can include Spark in their projects using its Maven coordinates and Python users can install Spark from PyPI.', 'If you’d like to build Spark from source, visit Building Spark.', 'Spark runs on both Windows and UNIX-like systems (e.g. Linux, Mac OS), and it should run on any platform that runs a supported version of Java. This should include JVMs on x86_64 and ARM64. It’s easy to run locally on one machine — all you need is to have java installed on your system PATH, or the JAVA_HOME environment variable pointing to a Java installation.', 'Spark runs on Java 8/11/17, Scala 2.12/2.13, Python 3.7+ and R 3.5+. Java 8 prior to version 8u201 support is deprecated as of Spark 3.2.0. When using the Scala API, it is necessary for applications to use the same version of Scala that Spark was compiled for. For example, when using Scala 2.13, use Spark compiled for 2.13, and compile code/applications for Scala 2.13 as well.', 'For Python 3.9, Arrow optimization and pandas UDFs might not work due to the supported Python versions in Apache Arrow. Please refer to the latest Python Compatibility page. For Java 11, -Dio.netty.tryReflectionSetAccessible=true is required additionally for Apache Arrow library. This prevents java.lang.UnsupportedOperationException: sun.misc.Unsafe or java.nio.DirectByteBuffer.(long, int) not available when Apache Arrow uses Netty internally.']
+>>> rdd2=rdd1.flatMap(lambda x:x.split(' '))
+>>> rdd3=rdd2.map(lambda x:(x,1))
+>>> rdd4=rdd3.reduceByKey(lambda x,y:x+y)
+>>> rdd4.collect()
+[('Tutorial', 1), ('is', 7), ('exclusive', 1), ('are', 3), ('interested', 1), ('in', 6), ('making', 1), ('of', 7), ('niche,', 1), ('trending', 1), ('technology', 1), ('The', 1), ('suitable', 1), ('learning', 1), ('professionals,', 1), ('Students,', 1), ('Teacher,', 1), ('', 1), ('Freshers', 1), ('etc.', 1), ('we', 1), ('analytics,', 1), ('Azure', 2), ('Engineering,', 1), ('Spark', 17), ('Scala,', 2), ('Python', 7), ('Machine', 1), ('concepts', 1), ('techniques,', 1), ('MS-PowerApps,', 1), ('Apache', 4), ('unified', 1), ('analytics', 1), ('engine', 2), ('It', 2), ('provides', 1), ('high-level', 1), ('APIs', 1), ('Java,', 1), ('an', 1), ('optimized', 1), ('supports', 2), ('execution', 1), ('set', 1), ('tools', 1), ('SQL', 2), ('processing,', 2), ('pandas', 3), ('MLlib', 1), ('machine', 2), ('learning,', 1), ('GraphX', 1), ('graph', 1), ('Structured', 1), ('incremental', 1), ('computation', 1), ('Downloading', 1), ('Get', 1), ('page', 1), ('project', 1), ('documentation', 1), ('version', 5), ('uses', 2), ('Hadoop’s', 1), ('HDFS', 1), ('YARN.', 1), ('pre-packaged', 1), ('handful', 1), ('Users', 1), ('free”', 1), ('binary', 1), ('run', 3), ('augmenting', 1), ('Java', 5), ('include', 2), ('projects', 1), ('using', 3), ('Maven', 1), ('coordinates', 1), ('install', 1), ('like', 1), ('visit', 1), ('Building', 1), ('Spark.', 1), ('both', 1), ('Windows', 1), ('UNIX-like', 1), ('systems', 1), ('(e.g.', 1), ('OS),', 1), ('platform', 1), ('Java.', 1), ('x86_64', 1), ('ARM64.', 1), ('It’s', 1), ('locally', 1), ('have', 1), ('java', 1), ('installed', 1), ('PATH,', 1), ('JAVA_HOME', 1), ('variable', 1), ('pointing', 1), ('installation.', 1), ('8/11/17,', 1), ('2.12/2.13,', 1), ('3.7+', 1), ('R', 1), ('8', 1), ('8u201', 1), ('support', 1), ('as', 2), ('When', 1), ('use', 2), ('was', 1), ('compiled', 2), ('for.', 1), ('example,', 1), ('when', 2), ('2.13,', 2), ('compile', 1), ('2.13', 1), ('optimization', 1), ('UDFs', 1), ('work', 1), ('due', 1), ('versions', 1), ('Please', 1), ('refer', 1), ('latest', 1), ('Compatibility', 1), ('page.', 1), ('11,', 1), ('-Dio.netty.tryReflectionSetAccessible=true', 1), ('library.', 1), ('prevents', 1), ('java.nio.DirectByteBuffer.(long,', 1), ('This', 4), ('for', 15), ('the', 9), ('people', 1), ('who', 1), ('their', 2), ('foot', 1), ('prints', 1), ('one', 2), ('top', 1), ('IT', 1), ('world.', 1), ('content', 1), ('posted', 1), ('here', 1), ('all', 2), ('Here,', 1), ('talk', 1), ('about', 1), ('BigData', 1), ('Data', 2), ('with', 2), ('(PySpark),', 1), ('Functions,', 1), ('Learning', 1), ('and', 17), ('Natural', 1), ('Language', 1), ('Processing,', 1), ('Visualization', 1), ('tools.', 1), ('a', 6), ('large-scale', 1), ('data', 2), ('processing.', 2), ('R,', 1), ('that', 3), ('general', 1), ('graphs.', 1), ('also', 2), ('rich', 1), ('higher-level', 1), ('including', 1), ('structured', 1), ('API', 1), ('on', 7), ('workloads,', 1), ('Streaming', 1), ('stream', 1), ('from', 3), ('downloads', 1), ('website.', 1), ('3.3.1.', 1), ('client', 1), ('libraries', 1), ('Downloads', 1), ('popular', 1), ('Hadoop', 2), ('versions.', 1), ('can', 3), ('download', 1), ('“Hadoop', 1), ('any', 2), ('by', 1), ('Spark’s', 1), ('classpath.', 1), ('Scala', 6), ('users', 2), ('its', 1), ('PyPI.', 1), ('If', 1), ('you’d', 1), ('to', 8), ('build', 1), ('source,', 1), ('runs', 3), ('Linux,', 1), ('Mac', 1), ('it', 2), ('should', 2), ('supported', 2), ('JVMs', 1), ('easy', 1), ('—', 1), ('you', 1), ('need', 1), ('your', 1), ('system', 1), ('or', 2), ('environment', 1), ('3.5+.', 1), ('prior', 1), ('deprecated', 1), ('3.2.0.', 1), ('API,', 1), ('necessary', 1), ('applications', 1), ('same', 1), ('For', 3), ('code/applications', 1), ('well.', 1), ('3.9,', 1), ('Arrow', 3), ('might', 1), ('not', 2), ('Arrow.', 1), ('required', 1), ('additionally', 1), ('java.lang.UnsupportedOperationException:', 1), ('sun.misc.Unsafe', 1), ('int)', 1), ('available', 1), ('Netty', 1), ('internally.', 1)]
+>>> rdd5=rdd4.filter(lambda x:'in' in x)
+>>> rdd5.collect()
+[('in', 6)]
+
+>>> df = spark.read.option('delimiter','.').text('/input-data/dude.txt')
+>>> df
+DataFrame[value: string]
+>>> df.count()
+5
+>>> df.show()
++--------------------+
+|               value|
++--------------------+
+|hi dude how are you.|
+|i am in the pool ...|
+|pull me in your f...|
+|          drag me to|
+|          the world.|
++--------------------+
+
+>>> rdd = spark.sparkContext.textFile('/input-data/dude.txt')
+>>> rdd.count()
+5
+>>> rdd1 = rdd.filter(lambda x:'in' in x)
+>>> rdd1.count()
+2
+>>> df.show()
++--------------------+
+|               value|
++--------------------+
+|hi dude how are you.|
+|i am in the pool ...|
+|pull me in your f...|
+|          drag me to|
+|          the world.|
++--------------------+
+
+>>> df.filter(col('value')=='in').show()
++-----+
+|value|
++-----+
++-----+
+
+>>> df.filter(col('value')=='the world.').show()
++----------+
+|     value|
++----------+
+|the world.|
++----------+
+
+
+
+>>> df.select(col('value').contains('in')).show()
++-------------------+
+|contains(value, in)|
++-------------------+
+|              false|
+|               true|
+|               true|
+|              false|
+|              false|
++-------------------+
+
+>>> df.select(col('value').contains('in')).count()
+5
+>>> df.filter(col('value').contains('in')).count()
+2
+
+dfwhen.createOrReplaceTempView("emp_grade")
+
+>>> dfsql = spark.sql("select * from emp_grade")
+>>> dfsql.show()
++-----------+----------+---------+--------+------------+---------+----------+------+--------------+----------+-------------+---------+
+|EMPLOYEE_ID|FIRST_NAME|LAST_NAME|   EMAIL|PHONE_NUMBER|HIRE_DATE|    JOB_ID|SALARY|COMMISSION_PCT|MANAGER_ID|DEPARTMENT_ID|Emp Grade|
++-----------+----------+---------+--------+------------+---------+----------+------+--------------+----------+-------------+---------+
+|        198|    Donald| OConnell|DOCONNEL|650.507.9833|21-JUN-07|  SH_CLERK|  2600|            - |       124|           50|        C|
+|        199|   Douglas|    Grant|  DGRANT|650.507.9844|13-JAN-08|  SH_CLERK|  2600|            - |       124|           50|        C|
+|        200|  Jennifer|   Whalen| JWHALEN|515.123.4444|17-SEP-03|   AD_ASST|  4400|            - |       101|           10|        C|
+|        201|   Michael|Hartstein|MHARTSTE|515.123.5555|17-FEB-04|    MK_MAN| 13000|            - |       100|           20|        B|
+|        202|       Pat|      Fay|    PFAY|603.123.6666|17-AUG-05|    MK_REP|  6000|            - |       201|           20|        C|
+|        203|     Susan|   Mavris| SMAVRIS|515.123.7777|07-JUN-02|    HR_REP|  6500|            - |       101|           40|        C|
+|        204|   Hermann|     Baer|   HBAER|515.123.8888|07-JUN-02|    PR_REP| 10000|            - |       101|           70|        C|
+|        205|   Shelley|  Higgins|SHIGGINS|515.123.8080|07-JUN-02|    AC_MGR| 12008|            - |       101|          110|        B|
+|        206|   William|    Gietz|  WGIETZ|515.123.8181|07-JUN-02|AC_ACCOUNT|  8300|            - |       205|          110|        C|
+|        100|    Steven|     King|   SKING|515.123.4567|17-JUN-03|   AD_PRES| 24000|            - |        - |           90|        A|
+|        101|     Neena|  Kochhar|NKOCHHAR|515.123.4568|21-SEP-05|     AD_VP| 17000|            - |       100|           90|        A|
+|        102|       Lex|  De Haan| LDEHAAN|515.123.4569|13-JAN-01|     AD_VP| 17000|            - |       100|           90|        A|
+|        103| Alexander|   Hunold| AHUNOLD|590.423.4567|03-JAN-06|   IT_PROG|  9000|            - |       102|           60|        C|
+|        104|     Bruce|    Ernst|  BERNST|590.423.4568|21-MAY-07|   IT_PROG|  6000|            - |       103|           60|        C|
+|        105|     David|   Austin| DAUSTIN|590.423.4569|25-JUN-05|   IT_PROG|  4800|            - |       103|           60|        C|
+|        106|     Valli|Pataballa|VPATABAL|590.423.4560|05-FEB-06|   IT_PROG|  4800|            - |       103|           60|        C|
+|        107|     Diana|  Lorentz|DLORENTZ|590.423.5567|07-FEB-07|   IT_PROG|  4200|            - |       103|           60|        C|
+|        108|     Nancy|Greenberg|NGREENBE|515.124.4569|17-AUG-02|    FI_MGR| 12008|            - |       101|          100|        B|
+|        109|    Daniel|   Faviet| DFAVIET|515.124.4169|16-AUG-02|FI_ACCOUNT|  9000|            - |       108|          100|        C|
+|        110|      John|     Chen|   JCHEN|515.124.4269|28-SEP-05|FI_ACCOUNT|  8200|            - |       108|          100|        C|
++-----------+----------+---------+--------+------------+---------+----------+------+--------------+----------+-------------+---------+
+
+>>> dfn = dfemp.withColumn("HIRE_NEW_DATE",unix_timestamp(col("HIRE_DATE"), "dd-MMM-yy").cast("timestamp")).select(col("EMPLOYEE_ID"),col("FIRST_NAME"),col("HIRE_DATE"),col("HIRE_NEW_DATE"),col("JOB_ID"),col("SALARY"),col("DEPARTMENT_ID"))
+>>> dfn
+DataFrame[EMPLOYEE_ID: int, FIRST_NAME: string, HIRE_DATE: string, HIRE_NEW_DATE: timestamp, JOB_ID: string, SALARY: int, DEPARTMENT_ID: int]
+>>> dfn.show()
++-----------+----------+---------+-------------------+----------+------+-------------+
+|EMPLOYEE_ID|FIRST_NAME|HIRE_DATE|      HIRE_NEW_DATE|    JOB_ID|SALARY|DEPARTMENT_ID|
++-----------+----------+---------+-------------------+----------+------+-------------+
+|        198|    Donald|21-JUN-07|2007-06-21 00:00:00|  SH_CLERK|  2600|           50|
+|        199|   Douglas|13-JAN-08|2008-01-13 00:00:00|  SH_CLERK|  2600|           50|
+|        200|  Jennifer|17-SEP-03|2003-09-17 00:00:00|   AD_ASST|  4400|           10|
+|        201|   Michael|17-FEB-04|2004-02-17 00:00:00|    MK_MAN| 13000|           20|
+|        202|       Pat|17-AUG-05|2005-08-17 00:00:00|    MK_REP|  6000|           20|
+|        203|     Susan|07-JUN-02|2002-06-07 00:00:00|    HR_REP|  6500|           40|
+|        204|   Hermann|07-JUN-02|2002-06-07 00:00:00|    PR_REP| 10000|           70|
+|        205|   Shelley|07-JUN-02|2002-06-07 00:00:00|    AC_MGR| 12008|          110|
+|        206|   William|07-JUN-02|2002-06-07 00:00:00|AC_ACCOUNT|  8300|          110|
+|        100|    Steven|17-JUN-03|2003-06-17 00:00:00|   AD_PRES| 24000|           90|
+|        101|     Neena|21-SEP-05|2005-09-21 00:00:00|     AD_VP| 17000|           90|
+|        102|       Lex|13-JAN-01|2001-01-13 00:00:00|     AD_VP| 17000|           90|
+|        103| Alexander|03-JAN-06|2006-01-03 00:00:00|   IT_PROG|  9000|           60|
+|        104|     Bruce|21-MAY-07|2007-05-21 00:00:00|   IT_PROG|  6000|           60|
+|        105|     David|25-JUN-05|2005-06-25 00:00:00|   IT_PROG|  4800|           60|
+|        106|     Valli|05-FEB-06|2006-02-05 00:00:00|   IT_PROG|  4800|           60|
+|        107|     Diana|07-FEB-07|2007-02-07 00:00:00|   IT_PROG|  4200|           60|
+|        108|     Nancy|17-AUG-02|2002-08-17 00:00:00|    FI_MGR| 12008|          100|
+|        109|    Daniel|16-AUG-02|2002-08-16 00:00:00|FI_ACCOUNT|  9000|          100|
+|        110|      John|28-SEP-05|2005-09-28 00:00:00|FI_ACCOUNT|  8200|          100|
++-----------+----------+---------+-------------------+----------+------+-------------+,
+
+
 
 
    
