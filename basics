@@ -1089,7 +1089,99 @@ dfemp_dep = dfemp.alias("dfe").join(dfdep.alias("dfd"),col("dfe.DEPARTMENT_ID")=
 |           null|            270|             Payroll|      null|
 +---------------+---------------+--------------------+----------+
 
+dfemp_loc = dfemp.join(dfdep,(dfemp.DEPARTMENT_ID==dfdep.DEPARTMENT_ID) & (dfdep.LOCATION_ID==1700),"inner").select(dfemp.FIRST_NAME,dfemp.DEPARTMENT_ID,dfdep.DEPARTMENT_ID,dfdep.LOCATION_ID).show()
++-----------+-------------+-------------+-----------+
+| FIRST_NAME|DEPARTMENT_ID|DEPARTMENT_ID|LOCATION_ID|
++-----------+-------------+-------------+-----------+
+|   Jennifer|           10|           10|       1700|
+|    Shelley|          110|          110|       1700|
+|    William|          110|          110|       1700|
+|     Steven|           90|           90|       1700|
+|      Neena|           90|           90|       1700|
+|        Lex|           90|           90|       1700|
+|      Nancy|          100|          100|       1700|
+|     Daniel|          100|          100|       1700|
+|       John|          100|          100|       1700|
+|     Ismael|          100|          100|       1700|
+|Jose Manuel|          100|          100|       1700|
+|       Luis|          100|          100|       1700|
+|        Den|           30|           30|       1700|
+|  Alexander|           30|           30|       1700|
+|     Shelli|           30|           30|       1700|
+|      Sigal|           30|           30|       1700|
+|        Guy|           30|           30|       1700|
+|      Karen|           30|           30|       1700|
++-----------+-------------+-------------+-----------+
 
+
+>>> location = [(1700,"Hyderabad"),(1400,"Sunabeda")]
+>>> schema = StructType([StructField("LOCATION_ID",IntegerType(),True),StructField("LOCATION_NAME",StringType(),True)])
+>>> dfloc = spark.createDataFrame(data=location,schema=schema)
+>>> dfloc.show()
++-----------+-------------+                                                     
+|LOCATION_ID|LOCATION_NAME|
++-----------+-------------+
+|       1700|    Hyderabad|
+|       1400|     Sunabeda|
++-----------+-------------+
+>>> dfemp_loc = dfemp.join(dfdep,dfemp.DEPARTMENT_ID==dfdep.DEPARTMENT_ID,"inner").select(dfemp.FIRST_NAME,dfemp.DEPARTMENT_ID,dfdep.DEPARTMENT_ID,dfdep.LOCATION_ID).join(dfloc,dfdep.LOCATION_ID==dfloc.LOCATION_ID,"inner").select(dfemp.FIRST_NAME,dfdep.DEPARTMENT_ID,dfloc.LOCATION_ID).show()
++-----------+-------------+-----------+
+| FIRST_NAME|DEPARTMENT_ID|LOCATION_ID|
++-----------+-------------+-----------+
+|      Karen|           30|       1700|
+|        Guy|           30|       1700|
+|      Sigal|           30|       1700|
+|     Shelli|           30|       1700|
+|  Alexander|           30|       1700|
+|        Den|           30|       1700|
+|       Luis|          100|       1700|
+|Jose Manuel|          100|       1700|
+|     Ismael|          100|       1700|
+|       John|          100|       1700|
+|     Daniel|          100|       1700|
+|      Nancy|          100|       1700|
+|        Lex|           90|       1700|
+|      Neena|           90|       1700|
+|     Steven|           90|       1700|
+|    William|          110|       1700|
+|    Shelley|          110|       1700|
+|   Jennifer|           10|       1700|
+|      Diana|           60|       1400|
+|      Valli|           60|       1400|
++-----------+-------------+-----------+
+
+>>> def firstLower(in_str):
+...     out_str = in_str[0].lower() + in_str[1:]
+...     return out_str
+... 
+>>> print(firstLower("Hhello"))
+hhello
+>>> firstLowerUDF = udf(lambda i:firstLower(i),StringType())
+>>> dfemp.select(col("FIRST_NAME"),col("LAST_NAME")).withColumn("UFirstname",firstLowerUDF(col("FIRST_NAME"))).withColumn("Ulastname",firstLowerUDF(col("LAST_NAME"))).show()
++----------+---------+----------+---------+
+|FIRST_NAME|LAST_NAME|UFirstname|Ulastname|
++----------+---------+----------+---------+
+|    Donald| OConnell|    donald| oConnell|
+|   Douglas|    Grant|   douglas|    grant|
+|  Jennifer|   Whalen|  jennifer|   whalen|
+|   Michael|Hartstein|   michael|hartstein|
+|       Pat|      Fay|       pat|      fay|
+|     Susan|   Mavris|     susan|   mavris|
+|   Hermann|     Baer|   hermann|     baer|
+|   Shelley|  Higgins|   shelley|  higgins|
+|   William|    Gietz|   william|    gietz|
+|    Steven|     King|    steven|     king|
+|     Neena|  Kochhar|     neena|  kochhar|
+|       Lex|  De Haan|       lex|  de Haan|
+| Alexander|   Hunold| alexander|   hunold|
+|     Bruce|    Ernst|     bruce|    ernst|
+|     David|   Austin|     david|   austin|
+|     Valli|Pataballa|     valli|pataballa|
+|     Diana|  Lorentz|     diana|  lorentz|
+|     Nancy|Greenberg|     nancy|greenberg|
+|    Daniel|   Faviet|    daniel|   faviet|
+|      John|     Chen|      john|     chen|
++----------+---------+----------+---------+
 
 
 
