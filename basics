@@ -1026,6 +1026,71 @@ only showing top 20 rows
 +-----------+----------+---------+-------------------+----------+------+-------------+-------------------+-----------+----------+
 
 
+dfemp_dep = dfemp.alias("dfe").join(dfdep.alias("dfd"),col("dfe.DEPARTMENT_ID")==col("dfd.DEPARTMENT_ID"),"right").select(col("dfe.DEPARTMENT_ID").alias("emp_mein_depart"),col("dfd.DEPARTMENT_ID").alias("dep_mein_depart"),col("dfe.FIRST_NAME")).show()
++---------------+---------------+----------+
+|emp_mein_depart|dep_mein_depart|FIRST_NAME|
++---------------+---------------+----------+
+|             10|             10|  Jennifer|
+|             20|             20|       Pat|
+|             20|             20|   Michael|
+|             30|             30|     Karen|
+|             30|             30|       Guy|
+|             30|             30|     Sigal|
+|             30|             30|    Shelli|
+|             30|             30| Alexander|
+|             30|             30|       Den|
+|             40|             40|     Susan|
+|             50|             50|    Joshua|
+|             50|             50|      John|
+|             50|             50|   Stephen|
+|             50|             50|    Renske|
+|             50|             50|     Hazel|
+|             50|             50|        Ki|
+|             50|             50|   Michael|
+|             50|             50|     Jason|
+|             50|             50|        TJ|
+|             50|             50|     James|
++---------------+---------------+----------+
+
+>>> dfemp_dep = dfemp.alias("dfe").join(dfdep.alias("dfd"),col("dfe.DEPARTMENT_ID")==col("dfd.DEPARTMENT_ID"),"right").select(col("dfe.DEPARTMENT_ID").alias("emp_mein_depart"),col("dfd.DEPARTMENT_ID").alias("dep_mein_depart"),col("dfd.DEPARTMENT_NAME"),col("dfe.FIRST_NAME")).where(col("emp_mein_depart")=='null').show()
++---------------+---------------+---------------+----------+
+|emp_mein_depart|dep_mein_depart|DEPARTMENT_NAME|FIRST_NAME|
++---------------+---------------+---------------+----------+
++---------------+---------------+---------------+----------+
+
+>>> dfemp_dep = dfemp.alias("dfe").join(dfdep.alias("dfd"),col("dfe.DEPARTMENT_ID")==col("dfd.DEPARTMENT_ID"),"right").select(col("dfe.DEPARTMENT_ID").alias("emp_mein_depart"),col("dfd.DEPARTMENT_ID").alias("dep_mein_depart"),col("dfd.DEPARTMENT_NAME"),col("dfe.FIRST_NAME")).where(col("emp_mein_depart")=='110').show()
++---------------+---------------+---------------+----------+
+|emp_mein_depart|dep_mein_depart|DEPARTMENT_NAME|FIRST_NAME|
++---------------+---------------+---------------+----------+
+|            110|            110|     Accounting|   Shelley|
+|            110|            110|     Accounting|   William|
++---------------+---------------+---------------+----------+
+
+>>> dfemp_dep = dfemp.alias("dfe").join(dfdep.alias("dfd"),col("dfe.DEPARTMENT_ID")==col("dfd.DEPARTMENT_ID"),"right").select(col("dfe.DEPARTMENT_ID").alias("emp_mein_depart"),col("dfd.DEPARTMENT_ID").alias("dep_mein_depart"),col("dfd.DEPARTMENT_NAME"),col("dfe.FIRST_NAME")).where(col("emp_mein_depart").isNull()).show()
++---------------+---------------+--------------------+----------+
+|emp_mein_depart|dep_mein_depart|     DEPARTMENT_NAME|FIRST_NAME|
++---------------+---------------+--------------------+----------+
+|           null|             80|               Sales|      null|
+|           null|            120|            Treasury|      null|
+|           null|            130|       Corporate Tax|      null|
+|           null|            140|  Control And Credit|      null|
+|           null|            150|Shareholder Services|      null|
+|           null|            160|            Benefits|      null|
+|           null|            170|       Manufacturing|      null|
+|           null|            180|        Construction|      null|
+|           null|            190|         Contracting|      null|
+|           null|            200|          Operations|      null|
+|           null|            210|          IT Support|      null|
+|           null|            220|                 NOC|      null|
+|           null|            230|         IT Helpdesk|      null|
+|           null|            240|    Government Sales|      null|
+|           null|            250|        Retail Sales|      null|
+|           null|            260|          Recruiting|      null|
+|           null|            270|             Payroll|      null|
++---------------+---------------+--------------------+----------+
+
+
+
 
 
    
