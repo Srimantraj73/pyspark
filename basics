@@ -1183,6 +1183,128 @@ hhello
 |      John|     Chen|      john|     chen|
 +----------+---------+----------+---------+
 
+>>> @udf(returnType=StringType())
+... def uppercaseudf(in_str):
+...     out_str = in_str.upper()
+...     return out_str
+... 
+>>> dfemp.select(col("FIRST_NAME"),col("LAST_NAME")).withColumn("UFirstname",uppercaseudf(col("FIRST_NAME"))).withColumn("Ulastname",uppercaseudf(col("LAST_NAME"))).show()
++----------+---------+----------+---------+
+|FIRST_NAME|LAST_NAME|UFirstname|Ulastname|
++----------+---------+----------+---------+
+|    Donald| OConnell|    DONALD| OCONNELL|
+|   Douglas|    Grant|   DOUGLAS|    GRANT|
+|  Jennifer|   Whalen|  JENNIFER|   WHALEN|
+|   Michael|Hartstein|   MICHAEL|HARTSTEIN|
+|       Pat|      Fay|       PAT|      FAY|
+|     Susan|   Mavris|     SUSAN|   MAVRIS|
+|   Hermann|     Baer|   HERMANN|     BAER|
+|   Shelley|  Higgins|   SHELLEY|  HIGGINS|
+|   William|    Gietz|   WILLIAM|    GIETZ|
+|    Steven|     King|    STEVEN|     KING|
+|     Neena|  Kochhar|     NEENA|  KOCHHAR|
+|       Lex|  De Haan|       LEX|  DE HAAN|
+| Alexander|   Hunold| ALEXANDER|   HUNOLD|
+|     Bruce|    Ernst|     BRUCE|    ERNST|
+|     David|   Austin|     DAVID|   AUSTIN|
+|     Valli|Pataballa|     VALLI|PATABALLA|
+|     Diana|  Lorentz|     DIANA|  LORENTZ|
+|     Nancy|Greenberg|     NANCY|GREENBERG|
+|    Daniel|   Faviet|    DANIEL|   FAVIET|
+|      John|     Chen|      JOHN|     CHEN|
++----------+---------+----------+---------+
+
+
+>>> dfrank.select("*").where(dfrank.rank_salary == '1').join(dfdep,dfemp.DEPARTMENT_ID==dfdep.DEPARTMENT_ID,"inner").select(dfdep.DEPARTMENT_NAME,dfdep.DEPARTMENT_ID).show()
++----------------+-------------+
+| DEPARTMENT_NAME|DEPARTMENT_ID|
++----------------+-------------+
+|  Administration|           10|
+|         Finance|          100|
+|      Accounting|          110|
+|       Marketing|           20|
+|      Purchasing|           30|
+| Human Resources|           40|
+|        Shipping|           50|
+|              IT|           60|
+|Public Relations|           70|
+|       Executive|           90|
+|       Executive|           90|
++----------------+-------------+
+
+>>> dfrank.select("*").where(dfrank.rank_salary == '1').join(dfdep,dfrank.DEPARTMENT_ID==dfdep.DEPARTMENT_ID,"inner").select(dfdep.DEPARTMENT_NAME,dfdep.DEPARTMENT_ID,dfrank.rank_salary).show()
++----------------+-------------+-----------+
+| DEPARTMENT_NAME|DEPARTMENT_ID|rank_salary|
++----------------+-------------+-----------+
+|  Administration|           10|          1|
+|         Finance|          100|          1|
+|      Accounting|          110|          1|
+|       Marketing|           20|          1|
+|      Purchasing|           30|          1|
+| Human Resources|           40|          1|
+|        Shipping|           50|          1|
+|              IT|           60|          1|
+|Public Relations|           70|          1|
+|       Executive|           90|          1|
+|       Executive|           90|          1|
++----------------+-------------+-----------+
+
+
+>>> dfemp1 = dfemp.withColumn("NEW_SALARY",col("SALARY").cast(IntegerType()))
+>>> dfemp1
+DataFrame[EMPLOYEE_ID: string, FIRST_NAME: string, LAST_NAME: string, EMAIL: string, PHONE_NUMBER: string, HIRE_DATE: string, JOB_ID: string, SALARY: string, COMMISSION_PCT: string, MANAGER_ID: string, DEPARTMENT_ID: string, NEW_SALARY: int]
+>>> WindowSpec = Window.partitionBy("DEPARTMENT_ID").orderBy(col("NEW_SALARY").desc())
+>>> dfrank = dfemp1.withColumn("highest_salary_rank", rank().over(Window.partitionBy("DEPARTMENT_ID").orderBy(col("NEW_SALARY").desc()))).select("DEPARTMENT_ID","SALARY","highest_salary_rank").show(100);
++-------------+------+-------------------+
+|DEPARTMENT_ID|SALARY|highest_salary_rank|
++-------------+------+-------------------+
+|           10|  4400|                  1|
+|          100| 12008|                  1|
+|          100|  9000|                  2|
+|          100|  8200|                  3|
+|          100|  7800|                  4|
+|          100|  7700|                  5|
+|          100|  6900|                  6|
+|          110| 12008|                  1|
+|          110|  8300|                  2|
+|           20| 13000|                  1|
+|           20|  6000|                  2|
+|           30| 11000|                  1|
+|           30|  3100|                  2|
+|           30|  2900|                  3|
+|           30|  2800|                  4|
+|           30|  2600|                  5|
+|           30|  2500|                  6|
++-------------+------+-------------------+
+
+>>> dfrank = dfemp1.withColumn("RUNNING_SUM", sum("SALARY").over(WindowSpec)).select("DEPARTMENT_ID","SALARY","RUNNING_SUM").show();
++-------------+------+-----------+
+|DEPARTMENT_ID|SALARY|RUNNING_SUM|
++-------------+------+-----------+
+|           10|  4400|     4400.0|
+|          100| 12008|    12008.0|
+|          100|  9000|    21008.0|
+|          100|  8200|    29208.0|
+|          100|  7800|    37008.0|
+|          100|  7700|    44708.0|
+|          100|  6900|    51608.0|
+|          110| 12008|    12008.0|
+|          110|  8300|    20308.0|
+|           20| 13000|    13000.0|
+|           20|  6000|    19000.0|
+|           30| 11000|    11000.0|
+|           30|  3100|    14100.0|
+|           30|  2900|    17000.0|
+|           30|  2800|    19800.0|
+|           30|  2600|    22400.0|
+|           30|  2500|    24900.0|
+|           40|  6500|     6500.0|
+|           50|  8200|     8200.0|
+|           50|  8000|    16200.0|
++-------------+------+-----------+
+
+
+
 
 
    
