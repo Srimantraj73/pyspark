@@ -1304,6 +1304,99 @@ DataFrame[EMPLOYEE_ID: string, FIRST_NAME: string, LAST_NAME: string, EMAIL: str
 +-------------+------+-----------+
 
 
+>>> jsonDf = spark.read.json('/input-data/jsonexample.json')
+>>> jsonDf.select(jsonDf.Text1, jsonDf.Array1[2]).show()
++-----+---------+
+|Text1|Array1[2]|
++-----+---------+
+|Hello|        9|
+| This|       91|
+|  Yes|        3|
++-----+---------+
+
+>>> jsonDf.select(jsonDf.Text1, explode(jsonDf.Array1)).show()
++-----+---+
+|Text1|col|
++-----+---+
+|Hello|  7|
+|Hello|  8|
+|Hello|  9|
+| This| 70|
+| This| 88|
+| This| 91|
+|  Yes|  1|
+|  Yes|  2|
+|  Yes|  3|
++-----+---+
+
+>>> dataDictionary = [
+...         ('James',{'hair':'black','eye':'brown'}),
+...         ('Michael',{'hair':'brown','eye':None}),
+...         ('Robert',{'hair':'red','eye':'black'}),
+...         ('Washington',{'hair':'grey','eye':'grey'}),
+...         ('Jefferson',{'hair':'brown','eye':''})
+...         ]
+schema = StructType([StructField("Name",StringType(),False),StructField("Properties",MapType(StringType(),StringType(),False))])
+
+>>> schema = StructType([StructField("Name",StringType(),False),StructField("Properties",MapType(StringType(),StringType(),True))])
+>>> dfmap = spark.createDataFrame(data=dataDictionary,schema=schema)
+>>> dfmap.show()
++----------+--------------------+                                               
+|      Name|          Properties|
++----------+--------------------+
+|     James|{eye -> brown, ha...|
+|   Michael|{eye -> null, hai...|
+|    Robert|{eye -> black, ha...|
+|Washington|{eye -> grey, hai...|
+| Jefferson|{eye -> , hair ->...|
++----------+--------------------+
+
+>>> dfmap.withColumn("hair",dfmap.Properties["hair"]).withColumn("eye",dfmap.Properties["eye"]).show()
++----------+--------------------+-----+-----+
+|      Name|          Properties| hair|  eye|
++----------+--------------------+-----+-----+
+|     James|{eye -> brown, ha...|black|brown|
+|   Michael|{eye -> null, hai...|brown| null|
+|    Robert|{eye -> black, ha...|  red|black|
+|Washington|{eye -> grey, hai...| grey| grey|
+| Jefferson|{eye -> , hair ->...|brown|     |
++----------+--------------------+-----+-----+
+
+
+>>> dfmap.select(dfmap.Name,explode(dfmap.Properties)).show()
++----------+----+-----+
+|      Name| key|value|
++----------+----+-----+
+|     James| eye|brown|
+|     James|hair|black|
+|   Michael| eye| null|
+|   Michael|hair|brown|
+|    Robert| eye|black|
+|    Robert|hair|  red|
+|Washington| eye| grey|
+|Washington|hair| grey|
+| Jefferson| eye|     |
+| Jefferson|hair|brown|
++----------+----+-----+
+
+>>> dfrep = dfexp.withColumn("New_Name",regexp_replace("Name","es","ie"))
+>>> dfrep.show()
++----------+----+-----+----------+
+|      Name| key|value|  New_Name|
++----------+----+-----+----------+
+|     James| eye|brown|     Jamie|
+|     James|hair|black|     Jamie|
+|   Michael| eye| null|   Michael|
+|   Michael|hair|brown|   Michael|
+|    Robert| eye|black|    Robert|
+|    Robert|hair|  red|    Robert|
+|Washington| eye| grey|Washington|
+|Washington|hair| grey|Washington|
+| Jefferson| eye|     | Jefferson|
+| Jefferson|hair|brown| Jefferson|
++----------+----+-----+----------+
+
+
 
 
 
