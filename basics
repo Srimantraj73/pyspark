@@ -1,3 +1,88 @@
+SparkContext vs SparkSession
+
+1. SparkSession was introduced in spark 2.0
+2. Before sparkSession , we had to create separate context for other api's like sql,hive,streaming in sparkContext
+         
+         import SparkContext,SqlContext
+         conf = new SparkConf().setAppName("my apps");
+         sparkContext = new SparkContext(conf);
+         sqlContext = new SqlContext(sparkContext);
+ 
+ 3. After sparkSession was introduced all the context(hive,sql,streaming) is encapsulated inside the sparkcontext itself.
+       Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /__ / .__/\_,_/_/ /_/\_\   version 3.2.1
+      /_/
+
+Using Python version 3.9.13 (main, Oct 13 2022 21:15:33)
+Spark context Web UI available at http://001ca2df9408:4040
+Spark context available as 'sc' (master = local[*], app id = local-1684831169243).
+SparkSession available as 'spark'.
+
+>>> spark.sql
+<bound method SparkSession.sql of <pyspark.sql.session.SparkSession object at 0x7f34c0bffdc0>>
+
+#create empty rdd 
+RDD = spark.sparkContext.parallelize([])
+RDD = spark.sparkContext.emptyRDD()
+
+RDD.isempty()
+
+>>> schema = StructType([StructField('fname',StringType(),True),StructField('Lname',StringType(),True)])
+>>> edf = spark.createDataframe([],schema)
+>>> edf.show()
++-----+-----+                                                                   
+|fname|Lname|
++-----+-----+
++-----+-----+
+
+>>> edf.limit(1).count()
+0                                                                               
+>>> edf.take(1)
+[]
+
+#without Schema
+>>> edf = spark.createDataFrame([],StructType([]))
+>>> edf.show()
+++                                                                              
+||
+++
+++
+
+#using MapPartition
+
+>>> data = [('James','Smith','M',3000),
+...   ('Anna','Rose','F',4100),
+...   ('Robert','Williams','M',6200), 
+... ]
+>>> 
+>>> columns = ["firstname","lastname","gender","salary"]
+>>> df = spark.createDataFrame(data=data, schema = columns)
+>>> df.show()
++---------+--------+------+------+                                              
+|firstname|lastname|gender|salary|
++---------+--------+------+------+
+|    James|   Smith|     M|  3000|
+|     Anna|    Rose|     F|  4100|
+|   Robert|Williams|     M|  6200|
++---------+--------+------+------+
+
+>>> def reformat(partitiondata):
+...     for row in partitiondata:
+...         yield [row.firstname + "," + row.lastname,row.salary*10/100]
+... 
+>>> df1 = df.rdd.mapPartitions(reformat).toDF(["name","bonus"])
+>>> df1.show()                                                                  
++---------------+-----+                                                         
+|           name|bonus|
++---------------+-----+
+|    James,Smith|300.0|
+|      Anna,Rose|410.0|
+|Robert,Williams|620.0|
++---------------+-----+
+
 #Create list of data to prepare data frame
 >>> person_list = [("Berry","","Allen",1,"M"),("Oliver","Queen","",2,"M"),("Robert","","Williams",3,"M"),("Tony","","Stark",4,"F"),("Rajiv","Mary","Kumar",5,"F")]
 
